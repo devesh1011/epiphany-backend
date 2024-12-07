@@ -1,11 +1,13 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from transformers import pipeline
+from fastapi import FastAPI, HTTPException  # type: ignore
+from pydantic import BaseModel  # type: ignore
+from transformers import pipeline  # type: ignore
 
 app = FastAPI()
 
 # Load the summarization pipeline with the fine-tuned model
-summarizer = pipeline("summarization", model="devesh1011/bart-large-cnn-finetuned-news-summarizer")
+summarizer = pipeline(
+    "summarization", model="devesh1011/bart-large-cnn-finetuned-news-summarizer"
+)
 
 
 class SummarizationRequest(BaseModel):
