@@ -16,7 +16,7 @@ summarizer = pipeline("summarization", model=model, tokenizer=tokenizer)
 
 class SummarizationRequest(BaseModel):
     text: str
-    max_length: int = 100 
+    max_length: int = 100  # Default maximum length
 
 
 @app.post("/summarize/")
