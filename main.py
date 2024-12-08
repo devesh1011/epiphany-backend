@@ -1,42 +1,42 @@
-from fastapi import FastAPI, HTTPException  # type: ignore
-from pydantic import BaseModel  # type: ignore
-from transformers import pipeline  # type: ignore
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from transformers import pipeline
 
-app = FastAPI()
-
-# Load the summarization pipeline with the fine-tuned model
+# Initialize the summarization pipeline
 summarizer = pipeline(
     "summarization", model="devesh1011/bart-large-cnn-finetuned-news-summarizer"
 )
 
+# Define the FastAPI application
+app = FastAPI()
 
+
+# Define the request body model
 class SummarizationRequest(BaseModel):
     text: str
-    max_length: int = 100  # Default maximum length
 
 
-@app.post("/summarize/")
+# Define the response model
+class SummarizationResponse(BaseModel):
+    summary: str
+
+
+# Define the POST request endpoint
+@app.post("/summarize/", response_model=SummarizationResponse)
 async def summarize(request: SummarizationRequest):
-    # Validate input text
-    if not request.text.strip():
-        raise HTTPException(status_code=400, detail="Text cannot be empty.")
+    # Check if the request body is valid
+    if not request.text:
+        raise HTTPException(status_code=400, detail="Text is required")
 
-    try:
-        # Generate summary using the pipeline
-        summary = summarizer(request.text, max_length=request.max_length)
-        return {"summary": summary[0]["summary_text"]}
-    except Exception as e:
-        # Handle any exceptions during summarization
-        raise HTTPException(status_code=500, detail=str(e))
+    # Summarize the text using the pipeline
+    summary = summarizer(request.text, max_length=130, min_length=30, do_sample=False)
+
+    # Return the summary as a response
+    return {"summary": summary[0]["summary_text"]}
 
 
-@app.get("/")
-def health_check():
-    return {"status": "API is running"}
-
-import os
+# Run the application
 if __name__ == "__main__":
     import uvicorn
 
-    port = int(os.environ.get("PORT", 10000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
